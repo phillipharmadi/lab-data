@@ -1,4 +1,105 @@
 ---
 title: "Lab 1/14/2022"
-output: html_notebook
+output: 
+  pdf_document:
+    latex_engine: xelatex
 ---
+
+```{r}
+library(tidyverse)
+bikecrash <- read.csv("bikecrash.csv")
+colnames(bikecrash)
+```
+
+## Exercise 1. Create a table that depicts the number of bike crashes by county. Does it appear to match what is displayed in the slides?
+
+```{r}
+bikecrash %>%
+  count(county)
+
+# Yes, it appears to match what is displayed on the slide.
+```
+
+
+## Exercise 2. Among crashes that occurred when some form of traffic control was present, what was the most common traffic control during urban crashes? Did this differ from rural crashes?
+
+```{r}
+bikecrash %>%
+  select(rural_urban, traffic_control) %>%
+  ggplot(aes(x = rural_urban, fill = traffic_control)) +
+  geom_bar(position = "fill") +
+  theme_minimal()
+
+# For urban crashes, the most common traffic control (if present) is the Stop Sign.
+# For rural crashes, the most common traffic control (if present) is the Doublle Yellow Line, No Pasing Zone.
+```
+
+
+## Exercise 3. Create a visualization that depicts the hour at which crashes occur, based on injury status. Make sure your graph is well-labeled, clean, and has a meaningful title. What do you notice?
+
+```{r}
+bikecrash %>%
+  group_by(bike_injury, crash_hour) %>%
+  ggplot(aes(x = crash_hour, fill = bike_injury)) +
+  geom_bar(position = "identity") +
+  labs(title = "Most common bike injury status during hours of the day",
+       x = "Crash Hour", y = "Count", fill = "Bike Injury") +
+  theme_minimal()
+
+bikecrash %>%
+  group_by(bike_injury, crash_hour) %>%
+  ggplot(aes(x = crash_hour, fill = bike_injury)) +
+  geom_bar(position = "fill") +
+  scale_y_continuous(labels = scales::percent) +
+  labs(title = "Most common bike injury status during hours of the day",
+       x = "Crash Hour", y = "Proportion", fill = "Bike Injury") +
+  theme_minimal()
+```
+
+
+## Exercise 4. Create a visualization that depicts the relationship between the biker’s age, the driver’s age, and the estimated speed of the driver. What do you notice?
+
+```{r}
+# bike_age <chr>
+# driver_age <chr>
+# driver_est_speed <chr>
+
+bikecrash <- bikecrash %>%
+  mutate(bike_age = as.double(bike_age),
+         driver_age = as.double(driver_age),
+         driver_est_speed_numeric = as.numeric(str_extract(driver_est_speed, "\\d+(?= mph)"))) 
+
+ggplot(bikecrash, aes(y = driver_age, x = bike_age)) + 
+  geom_point(alpha = 0.2) + 
+  theme_minimal(base_size = 12) 
+
+ggplot(bikecrash, aes(y = driver_est_speed_numeric, x = driver_age)) + 
+  geom_point(alpha = 0.2) + 
+  theme_minimal(base_size = 12) 
+  
+ggplot(bikecrash, aes(y = driver_est_speed_numeric, x = bike_age)) + 
+  geom_point(alpha = 0.2) + 
+  theme_minimal(base_size = 12)
+```
+
+No significant correlation within these 3 variables.
+
+```{r}
+bikecrash2 <- bikecrash %>%
+  select(bike_age, driver_age, driver_est_speed_numeric)
+```
+
+
+```{r}
+library(PerformanceAnalytics)
+library(corrplot)
+chart.Correlation(bikecrash2)
+```
+
+
+## Exercise 5. Is there evidence of an association between whether an ambulance is required at the scene and whether the bike crash was a hit and run? Explain using an appropriate statistical model and quantify any variability in your estimates. In your analysis, be sure to account for potential confounding variables, including the speed at which the driver was going.
+
+```{r}
+
+```
+
